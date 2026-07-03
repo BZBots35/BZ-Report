@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'dart:ui'; // Indispensable pour l'effet de flou (blur)
-import '../mocks/mock_rapports.dart'; // Notre fausse base de données 
+import 'dart:ui';
+import '../mocks/mock_rapports.dart';
+import '../widgets/glass_card.dart';
 
 class ListeRapportsScreen extends StatelessWidget {
   const ListeRapportsScreen({super.key});
@@ -8,7 +9,7 @@ class ListeRapportsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true, // Le dégradé passe sous la barre
+      extendBodyBehindAppBar: true,
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(kToolbarHeight + 20),
         child: _buildGlassAppBar(),
@@ -23,15 +24,15 @@ class ListeRapportsScreen extends StatelessWidget {
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
         child: AppBar(
-          backgroundColor: Colors.white.withOpacity(0.05),
+          backgroundColor: Colors.white.withOpacity(0.4),
           elevation: 0,
           title: Text(
             'INSPECTIONS BZ-BOTS',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.9),
+              color: Colors.black.withOpacity(0.85),
               fontWeight: FontWeight.w600,
               fontSize: 22,
-              letterSpacing: 2.0, // On garde le côté espacé et pro
+              letterSpacing: 2.0,
             ),
           ),
           centerTitle: true,
@@ -44,15 +45,14 @@ class ListeRapportsScreen extends StatelessWidget {
   Widget _buildMainContent() {
     return Stack(
       children: [
-        // Le fond dégradé liquide 100% Noir & Blanc
         Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                const Color(0xFF121212).withOpacity(0.95), // Noir très profond
-                const Color(0xFF2C2C2C).withOpacity(0.8),  // Gris anthracite
-                const Color(0xFF424242).withOpacity(0.6),  // Gris métallisé
-                Colors.white.withOpacity(0.02),            // Reflet subtil
+                Colors.white,
+                const Color(0xFFF5F5F5),
+                const Color(0xFFEAEAEA),
+                const Color(0xFFE0E0E0).withOpacity(0.6),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -60,7 +60,6 @@ class ListeRapportsScreen extends StatelessWidget {
             ),
           ),
         ),
-        // La liste générée à partir des fausses données
         ListView.builder(
           padding: const EdgeInsets.fromLTRB(16, kToolbarHeight + 50, 16, 16),
           itemCount: fausseListeRapports.length,
@@ -82,95 +81,58 @@ class ListeRapportsScreen extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // L'icône du robot en blanc pur (Fini le bleu fluo)
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.black.withOpacity(0.06),
               borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(
               Icons.precision_manufacturing_outlined,
-              color: Colors.white, 
+              color: Colors.black87,
               size: 40,
             ),
           ),
           const SizedBox(width: 16),
-          // Les textes d'information
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text('CLIENT:', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                const Text('CLIENT:', style: TextStyle(color: Colors.black54, fontSize: 12)),
                 Text(
                   clientName.toUpperCase(),
-                  style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                  style: const TextStyle(color: Colors.black87, fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 4),
-                Text('DATE: $date', style: const TextStyle(color: Colors.white70, fontSize: 14)),
+                Text('DATE: $date', style: const TextStyle(color: Colors.black54, fontSize: 14)),
               ],
             ),
           ),
           const SizedBox(width: 8),
-          // Le badge de statut
           _buildStatusChip(status),
         ],
       ),
     );
   }
 
-  // --- COMPOSANT 4 : Le badge de statut (Noir et Blanc) ---
+  // --- COMPOSANT 4 : Le badge de statut ---
   Widget _buildStatusChip(String status) {
     final bool isTermine = status == 'Terminé';
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: isTermine ? Colors.white : Colors.black, // Blanc si terminé, Noir sinon
+        color: isTermine ? Colors.black87 : Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: isTermine ? Colors.white : Colors.grey[700]!), // Bordure assortie
+        border: Border.all(color: isTermine ? Colors.black87 : Colors.grey[400]!),
       ),
       child: Text(
         status.toUpperCase(),
         style: TextStyle(
-          color: isTermine ? Colors.black : Colors.white, // Texte inversé par rapport au fond
+          color: isTermine ? Colors.white : Colors.black87,
           fontSize: 10,
           fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-  }
-}
-
-// ============================================================================
-// WIDGET RÉUTILISABLE : L'effet de verre (Glassmorphisme)
-// ============================================================================
-class GlassCard extends StatelessWidget {
-  final Widget child;
-  const GlassCard({super.key, required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(15.0),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
-            border: Border.all(color: Colors.white.withOpacity(0.1)),
-            borderRadius: BorderRadius.circular(15.0),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.2), // Ombre légère pour donner de la profondeur
-                blurRadius: 10,
-                offset: const Offset(0, 5),
-              ),
-            ],
-          ),
-          padding: const EdgeInsets.all(16.0),
-          child: child,
         ),
       ),
     );

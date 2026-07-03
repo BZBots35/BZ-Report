@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/liste_rapports_screen.dart';
+import 'screens/dashboard_screen.dart';
 
 void main() {
   runApp(const BzReportApp());
@@ -13,12 +13,11 @@ class BzReportApp extends StatelessWidget {
     return MaterialApp(
       title: 'BZ Report',
       debugShowCheckedModeBanner: false,
-      // On passe sur un thème sombre global pour sublimer l'effet "Liquid Glass"
-      theme: ThemeData.dark().copyWith(
+      theme: ThemeData.light().copyWith(
         primaryColor: const Color(0xFF00386E),
-        scaffoldBackgroundColor: Colors.black,
+        scaffoldBackgroundColor: Colors.white,
       ),
-      home: const ListeRapportsScreen(), 
+      home: const DashboardScreen(),
     );
   }
 }
