@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
 import '../mocks/mock_rapports.dart';
-import 'liste_rapports_screen.dart';
 import '../widgets/glass_card.dart';
+import 'liste_rapports_screen.dart';
+import 'saisie_defaut_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -81,7 +82,7 @@ class DashboardScreen extends StatelessWidget {
               const SizedBox(height: 24),
               _buildRecentHeader(context),
               const SizedBox(height: 12),
-              ..._buildRecentReports(),
+              ..._buildRecentReports(context),
             ],
           ),
         ),
@@ -130,7 +131,12 @@ class DashboardScreen extends StatelessWidget {
       width: double.infinity,
       child: ElevatedButton.icon(
         onPressed: () {
-          // TODO: brancher vers l'écran de création de rapport
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => SaisieDefautScreen(rapport: fausseListeRapports.first),
+            ),
+          );
         },
         icon: const Icon(Icons.add, color: Colors.white),
         label: const Text(
@@ -169,41 +175,49 @@ class DashboardScreen extends StatelessWidget {
   }
 
   // --- APERÇU DES 2 DERNIERS RAPPORTS ---
-  List<Widget> _buildRecentReports() {
+  List<Widget> _buildRecentReports(BuildContext context) {
     final recents = fausseListeRapports.take(2).toList();
     return recents.map((rapport) {
       return Padding(
         padding: const EdgeInsets.only(bottom: 12.0),
-        child: GlassCard(
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.06),
-                  borderRadius: BorderRadius.circular(10),
+        child: GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => SaisieDefautScreen(rapport: rapport)),
+            );
+          },
+          child: GlassCard(
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.06),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.description_outlined, color: Colors.black87, size: 28),
                 ),
-                child: const Icon(Icons.description_outlined, color: Colors.black87, size: 28),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      rapport.nomClient,
-                      style: const TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.w600),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      rapport.date,
-                      style: const TextStyle(color: Colors.black45, fontSize: 12),
-                    ),
-                  ],
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        rapport.nomClient,
+                        style: const TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.w600),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        rapport.date,
+                        style: const TextStyle(color: Colors.black45, fontSize: 12),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       );
