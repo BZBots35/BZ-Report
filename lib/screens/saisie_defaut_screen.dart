@@ -5,7 +5,9 @@ import 'package:speech_to_text/speech_recognition_result.dart';
 import '../models/rapport.dart';
 import '../models/defaut.dart';
 import '../services/defaut_parser.dart';
+import '../services/text_correction_service.dart';
 import '../widgets/glass_card.dart';
+import 'generation_rapport_screen.dart';
 
 class SaisieDefautScreen extends StatefulWidget {
   final Rapport rapport;
@@ -37,20 +39,13 @@ class _SaisieDefautScreenState extends State<SaisieDefautScreen> {
         debugPrint('❌ Erreur speech_to_text: ${error.errorMsg} (permanent: ${error.permanent})');
         setState(() => _isListening = false);
       },
-      debugLogging: true, // Active les logs détaillés du plugin
+      debugLogging: true,
     );
     debugPrint('✅ Speech disponible: $_speechAvailable');
-
-    final locales = await _speech.locales();
-    debugPrint('🌍 Locales disponibles: ${locales.map((l) => l.localeId).join(", ")}');
-
     setState(() {});
   }
 
-  // Relance automatiquement l'écoute si elle s'arrête toute seule
-  // (timeout interne, silence détecté) sans que l'utilisateur ait cliqué sur stop
   void _onSpeechStatus(String status) {
-    debugPrint('ℹ️ Status speech: $status');
     if (status == 'done' || status == 'notListening') {
       if (_isListening && !_stoppedManually) {
         _startListening();
@@ -65,20 +60,19 @@ class _SaisieDefautScreenState extends State<SaisieDefautScreen> {
     setState(() => _isListening = true);
     _speech.listen(
       onResult: _onResult,
-      localeId: 'fr_FR', // Force le français
-      listenFor: const Duration(minutes: 5), // Durée max de la session
-      pauseFor: const Duration(seconds: 8), // Silence toléré avant coupure
+      localeId: 'fr_FR',
+      listenFor: const Duration(minutes: 5),
+      pauseFor: const Duration(seconds: 8),
       listenOptions: SpeechListenOptions(
-        listenMode: ListenMode.dictation, // Adapté aux phrases longues
-        partialResults: true, // Affiche le texte au fur et à mesure
-        cancelOnError: true, // Temporaire : pour voir les erreurs en debug
+        listenMode: ListenMode.dictation,
+        partialResults: true,
+        cancelOnError: true,
         autoPunctuation: true,
       ),
     );
   }
 
   void _onResult(SpeechRecognitionResult result) {
-    debugPrint('📝 Résultat reçu: "${result.recognizedWords}" (final: ${result.finalResult})');
     setState(() {
       _textController.text = result.recognizedWords;
     });
@@ -88,8 +82,6 @@ class _SaisieDefautScreenState extends State<SaisieDefautScreen> {
     if (!_isListening) {
       if (_speechAvailable) {
         _startListening();
-      } else {
-        debugPrint('⚠️ Speech non disponible, impossible de démarrer l\'écoute');
       }
     } else {
       _stoppedManually = true;
@@ -101,8 +93,10 @@ class _SaisieDefautScreenState extends State<SaisieDefautScreen> {
   void _enregistrerDefaut() {
     if (_textController.text.trim().isEmpty) return;
 
+    final texteCorrige = TextCorrectionService.correct(_textController.text.trim());
+
     final defaut = DefautParser.parse(
-      _textController.text.trim(),
+      texteCorrige,
       DateTime.now().millisecondsSinceEpoch.toString(),
     );
 
@@ -203,6 +197,7 @@ class _SaisieDefautScreenState extends State<SaisieDefautScreen> {
                   style: TextStyle(color: Colors.black.withOpacity(0.4), fontSize: 13),
                 ),
               ..._defautsSaisis.map(_buildDefautTile),
+              if (_defautsSaisis.isNotEmpty) _buildTerminerButton(),
             ],
           ),
         ),
@@ -261,6 +256,11 @@ class _SaisieDefautScreenState extends State<SaisieDefautScreen> {
               ),
               contentPadding: const EdgeInsets.all(12),
             ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '💡 Vérifiez et corrigez le texte avant d\'ajouter le défaut',
+            style: TextStyle(color: Colors.black.withOpacity(0.4), fontSize: 11, fontStyle: FontStyle.italic),
           ),
           const SizedBox(height: 12),
           SizedBox(
@@ -346,6 +346,38 @@ class _SaisieDefautScreenState extends State<SaisieDefautScreen> {
               child: Icon(Icons.close, color: Colors.black.withOpacity(0.3), size: 18),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTerminerButton() {
+    return Padding(
+      padding: const EdgeInsets.only(top: 24.0),
+      child: SizedBox(
+        width: double.infinity,
+        child: ElevatedButton.icon(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => GenerationRapportScreen(
+                  rapport: widget.rapport,
+                  defauts: _defautsSaisis,
+                ),
+              ),
+            );
+          },
+          icon: const Icon(Icons.picture_as_pdf_outlined, color: Colors.white, size: 18),
+          label: const Text(
+            'TERMINER ET GÉNÉRER LE RAPPORT',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+          ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.black87,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
         ),
       ),
     );

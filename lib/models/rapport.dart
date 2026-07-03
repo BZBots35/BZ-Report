@@ -1,14 +1,17 @@
+enum TypeRapport { simplifie, complet }
+
 class Rapport {
   final String id;
   final String nomClient;
   final String date;
   final String statut;
+  final TypeRapport type;
 
-  // Le constructeur : il oblige à fournir ces 4 informations pour créer un rapport
   Rapport({
     required this.id,
     required this.nomClient,
     required this.date,
     required this.statut,
+    this.type = TypeRapport.simplifie,
   });
 }

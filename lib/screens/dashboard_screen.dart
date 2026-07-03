@@ -4,6 +4,7 @@ import '../mocks/mock_rapports.dart';
 import '../widgets/glass_card.dart';
 import 'liste_rapports_screen.dart';
 import 'saisie_defaut_screen.dart';
+import 'creation_rapport_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -125,7 +126,7 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  // --- ACCÈS RAPIDE ---
+     // --- ACCÈS RAPIDE ---
   Widget _buildQuickAction(BuildContext context) {
     return SizedBox(
       width: double.infinity,
@@ -134,7 +135,7 @@ class DashboardScreen extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => SaisieDefautScreen(rapport: fausseListeRapports.first),
+              builder: (_) => const CreationRapportScreen(),
             ),
           );
         },
